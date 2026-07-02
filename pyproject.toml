@@ -1,0 +1,10 @@
+[project]
+name = "relationship-bot"
+version = "1.0.0"
+description = "Private guided Discord relationship assistant for NTM and Kosi"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

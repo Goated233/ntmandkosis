@@ -14,8 +14,6 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     discord_token: str = Field(default="", alias="DISCORD_TOKEN")
-    database_backend: str = Field(default="sqlite", alias="DATABASE_BACKEND")
-    sqlite_path: str = Field(default="data/relationship_bot.sqlite3", alias="SQLITE_PATH")
     mongodb_uri: str = Field(default="mongodb://localhost:27017", alias="MONGODB_URI")
     mongodb_db: str = Field(default="relationship_bot", alias="MONGODB_DB")
     openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
@@ -24,14 +22,6 @@ class Settings(BaseSettings):
     partner_one_id: int = Field(default=1417262684990083142, alias="PARTNER_ONE_ID")
     partner_two_id: int = Field(default=1516247373716787363, alias="PARTNER_TWO_ID")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
-
-    @property
-    def normalized_database_backend(self) -> str:
-        """Return the selected database backend, normalized for comparisons."""
-        backend = self.database_backend.strip().lower()
-        if backend not in {"sqlite", "mongodb"}:
-            raise ValueError("DATABASE_BACKEND must be either sqlite or mongodb.")
-        return backend
 
     @property
     def owner_ids(self) -> Set[int]:

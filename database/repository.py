@@ -7,6 +7,9 @@ all other database errors still fail fast.
 from __future__ import annotations
 
 import logging
+"""Async repository for relationship-bot collections."""
+from __future__ import annotations
+
 from typing import Any
 
 try:
@@ -111,6 +114,27 @@ class RelationshipRepository:
         details = getattr(exc, "details", None) or {}
         value = details.get("codeName")
         return str(value) if value else None
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
+from utils.time import utcnow
+
+
+class RelationshipRepository:
+    """High-level MongoDB operations used by cogs and services."""
+    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+        self.db = db
+
+    async def ensure_indexes(self) -> None:
+        """Create production indexes for common relationship queries."""
+        await self.db.users.create_index("user_id", unique=True)
+        for name in ["memories", "complaints", "checkins", "goals", "trackers", "journals"]:
+            await self.db[name].create_index([("created_at", -1)])
+        await self.db.trackers.create_index([("kind", 1), ("status", 1), ("created_at", -1)])
+        await self.db.complaints.create_index([("author_id", 1), ("status", 1), ("created_at", -1)])
+        await self.db.checkins.create_index([("author_id", 1), ("created_at", -1)])
+        await self.db.settings.create_index("guild_id", unique=True)
+        for name in ["gratitude", "affirmations", "notes", "boundaries", "triggers", "needs", "playlist", "wishlist", "gifts", "achievements", "inside_jokes", "favorites", "dreams", "plans", "countdowns", "mood_notes", "lessons", "patterns", "reflections"]:
+            await self.db[name].create_index([("created_at", -1)])
 
     async def upsert_user(self, user_id: int, display_name: str) -> None:
         """Insert or update a Discord user."""

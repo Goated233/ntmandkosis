@@ -14,7 +14,6 @@ from cogs.relationship import RelationshipCog
 from config import get_settings
 from database.client import MongoService
 from database.repository import RelationshipRepository
-from database.sqlite_repository import SQLiteRelationshipRepository
 from events.reminders import ReminderEvents
 from services.ai import RelationshipAI
 from utils.embeds import error_embed
@@ -24,20 +23,14 @@ LOGGER = logging.getLogger(__name__)
 
 
 class RelationshipBot(commands.Bot):
-    """Discord bot wired with the configured database, AI services, and cogs."""
+    """Discord bot wired with MongoDB, AI services, and relationship cogs."""
     def __init__(self) -> None:
         self.settings = get_settings()
         intents = discord.Intents.default()
         intents.message_content = True
         super().__init__(command_prefix=self.settings.command_prefix, intents=intents, help_command=None, owner_ids=self.settings.owner_ids)
-        self.mongo: MongoService | None = None
-        if self.settings.normalized_database_backend == "mongodb":
-            self.mongo = MongoService(self.settings.mongodb_uri, self.settings.mongodb_db)
-            self.repo = RelationshipRepository(self.mongo.db)
-            LOGGER.info("Using MongoDB repository", extra={"database": self.settings.mongodb_db})
-        else:
-            self.repo = SQLiteRelationshipRepository(self.settings.sqlite_path)
-            LOGGER.info("Using SQLite repository", extra={"sqlite_path": self.settings.sqlite_path})
+        self.mongo = MongoService(self.settings.mongodb_uri, self.settings.mongodb_db)
+        self.repo = RelationshipRepository(self.mongo.db)
         self.ai = RelationshipAI(self.settings.openai_api_key)
 
     async def setup_hook(self) -> None:
@@ -51,11 +44,8 @@ class RelationshipBot(commands.Bot):
         LOGGER.info("Relationship bot setup complete")
 
     async def close(self) -> None:
-        """Cleanly close Discord and database resources."""
-        if self.mongo is not None:
-            self.mongo.close()
-        elif hasattr(self.repo, "close"):
-            self.repo.close()
+        """Cleanly close Discord and MongoDB resources."""
+        self.mongo.close()
         await super().close()
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:

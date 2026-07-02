@@ -1,11 +1,11 @@
 # NTM & Kosi Relationship Bot
 
-A private Discord relationship assistant built only for NTM (`1417262684990083142`) and Kosi (`1516247373716787363`). It works in DMs and servers, supports guided buttons/modals, logs server activity to a configured channel, stores relationship data in SQLite by default, can still use MongoDB when explicitly configured, and uses neutral AI mediation when `OPENAI_API_KEY` is configured.
+A private Discord relationship assistant built only for NTM (`1417262684990083142`) and Kosi (`1516247373716787363`). It works in DMs and servers, supports guided buttons/modals, logs server activity to a configured channel, stores relationship data in MongoDB, and uses neutral AI mediation when `OPENAI_API_KEY` is configured.
 
 ## First-time setup
 
 1. Copy `.env.example` to `.env`.
-2. Fill in `DISCORD_TOKEN` and optionally `OPENAI_API_KEY`. Leave `DATABASE_BACKEND=sqlite` for Railway free-tier deployments. Use `DATABASE_BACKEND=mongodb` only when your MongoDB volume has enough free space.
+2. Fill in `DISCORD_TOKEN`, `MONGODB_URI`, and optionally `OPENAI_API_KEY`.
 3. Install dependencies:
 
 ```bash
@@ -67,8 +67,8 @@ The AI is instructed to never take sides, identify misunderstandings, summarize 
 
 ## Deployment
 
-This repository includes `runtime.txt`, `Procfile`, and `railway.json` for Railway worker deployment. The default SQLite backend writes to `data/relationship_bot.sqlite3`, avoiding MongoDB free-tier disk/index failures.
+This repository includes `runtime.txt` and `Procfile` for Railway-style worker deployment.
 
 ## Railway MongoDB disk-space behavior
 
-On small/free MongoDB deployments, startup index creation can fail with `OutOfDiskSpace`. The bot now defaults to SQLite so a full MongoDB volume is no longer required. If you choose `DATABASE_BACKEND=mongodb`, startup index builds are treated as nonessential maintenance: if MongoDB reports `OutOfDiskSpace`, startup continues and logs a warning, but normal database writes can still fail until the MongoDB volume has enough free space. Free space by deleting old data, compacting the database, recreating the database, or moving to a larger MongoDB tier if writes are rejected.
+On small/free MongoDB deployments, startup index creation can fail with `OutOfDiskSpace`. The bot now treats startup index builds as nonessential maintenance: if MongoDB reports `OutOfDiskSpace`, startup continues and logs a warning, but normal database writes can still fail until the MongoDB volume has enough free space. Free space by deleting old data, compacting the database, or moving to a larger MongoDB tier if writes are rejected.

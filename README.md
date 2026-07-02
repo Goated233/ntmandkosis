@@ -68,3 +68,7 @@ The AI is instructed to never take sides, identify misunderstandings, summarize 
 ## Deployment
 
 This repository includes `runtime.txt` and `Procfile` for Railway-style worker deployment.
+
+## Railway MongoDB disk-space behavior
+
+On small/free MongoDB deployments, startup index creation can fail with `OutOfDiskSpace`. The bot now treats startup index builds as nonessential maintenance: if MongoDB reports `OutOfDiskSpace`, startup continues and logs a warning, but normal database writes can still fail until the MongoDB volume has enough free space. Free space by deleting old data, compacting the database, or moving to a larger MongoDB tier if writes are rejected.
